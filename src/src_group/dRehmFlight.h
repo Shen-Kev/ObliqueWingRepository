@@ -176,8 +176,8 @@ const int throttleChannelPin = 2; // throttle
 const int rollChannelPin = 3;     // ail
 const int pitchChannelPin = 4;    // ele
 const int yawChannelPin = 5;      // rudd
-const int mode1ChannelPin = 6;    // mode: position 1: full manual: position 2: stabilized flight : position 3: dynamic soar activate
-const int mode2ChannelPin = 7;    //
+const int mode1ChannelPin = 6;    // pivot
+const int mode2ChannelPin = 7;    // data collect
 const int PPM_Pin = 23;
 // OneShot125 ESC pin outputs: NOT USED
 const int m1Pin = 100;
@@ -567,12 +567,6 @@ void calculate_IMU_error()
     GyroY = GyY / GYRO_SCALE_FACTOR;
     GyroZ = GyZ / GYRO_SCALE_FACTOR;
 
-    // FLIPPITY WHIPPITY
-    AccY = -AccY;
-    AccZ = -AccZ;
-    // GyroY = -GyroY;
-    // GyroZ = -GyroZ;
-
     // Sum all readings
     AccErrorX = AccErrorX + AccX;
     AccErrorY = AccErrorY + AccY;
@@ -638,10 +632,6 @@ void getIMUdata()
   AccY = AcY / ACCEL_SCALE_FACTOR;
   AccZ = AcZ / ACCEL_SCALE_FACTOR;
 
-  // FLIPPITY WHIPPITY
-  AccY = -AccY;
-  AccZ = -AccZ;
-
   // Correct the outputs with the calculated error values
   AccX = AccX - AccErrorX;
   AccY = AccY - AccErrorY;
@@ -660,9 +650,6 @@ void getIMUdata()
   GyroY = GyY / GYRO_SCALE_FACTOR;
   GyroZ = GyZ / GYRO_SCALE_FACTOR;
 
-  // FLIPPITY WHIPPITY
-  // GyroY = -GyroY;
-  // GyroZ = -GyroZ;
 
   // Correct the outputs with the calculated error values
   GyroX = GyroX - GyroErrorX;

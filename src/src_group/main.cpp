@@ -23,8 +23,8 @@ float heading_changed_last_loop;
 float desiredPivotServo_command_PWM = 90; // The desired sweep angle of the wing in degrees
 
 // Variables for Data Logging
-const int COLUMNS = 10;            // 16 columns of data to be logged to the SD card
-const int ROWS = 10500;            //  rows of data to be logged to the SD card
+const int COLUMNS = 11;            // 16 columns of data to be logged to the SD card
+const int ROWS = 9000;            //  rows of data to be logged to the SD card
 float dataLogArray[ROWS][COLUMNS]; // The array that stores the data to be logged to the SD card
 boolean dataLogged = false;        // Used to determine if the data has been logged to the SD card
 boolean toggle = false;            // Used to toggle the LED
@@ -70,11 +70,6 @@ void setup()
     IMUinit();
     Serial.println("passed IMU init");
 
-    calculate_IMU_error();
-
-    delay(100000);
-    Serial.println("eek");
-
     aileronServo.attach(aileronServoPin, 900, 2100);
     elevatorServo.attach(elevatorServoPin, 900, 2100);
     rudderServo.attach(rudderServoPin, 900, 2100);
@@ -103,7 +98,7 @@ void setup()
     pitch_channel = pitch_fs;
     yaw_channel = yaw_fs;
     pivot_channel = mode1_fs;
-    mode2_channel = mode2_fs; // NEED TO FIGURE OUT WHAT THESE DO
+    mode2_channel = mode2_fs; // to log data
     delay(100);
     aileronServo.write(90);
     elevatorServo.write(90);
@@ -128,13 +123,17 @@ void loop()
     gyroData[1] = GyroY * DEG_TO_RAD;
     gyroData[2] = GyroZ * DEG_TO_RAD;
 
+    
     getCommands();
     failSafe();
+
 
     pitch_IMU_rad = pitch_IMU * DEG_TO_RAD;
     roll_IMU_rad = roll_IMU * DEG_TO_RAD;
     yaw_IMU_rad = yaw_IMU * DEG_TO_RAD;
     getDesState();
+
+    Serial.println(yaw_channel);
 
     // WING PIVOT
     if (pivot_channel < 1400)
@@ -151,7 +150,7 @@ void loop()
         //  roll_PID = 0;
         //  pitch_PID = 0;
     }
-    else if (pivot_channel < 1600)
+    else if (pivot_channel > 1600)
     {
         flight_phase = thirty_deg_sweep;
         desiredPivotServo_command_PWM = 180;
