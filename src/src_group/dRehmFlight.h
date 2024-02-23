@@ -191,14 +191,14 @@ const int ESCpin = 8;            // ESC
 const int aileronServoPin = 9;   // ailerons
 const int elevatorServoPin = 25; // elevator
 const int rudderServoPin = 24;   // rudder
-const int gimbal1ServoPin = 28;  // gimbal
+const int pivotServoPin = 28;  // gimbal
 const int gimbal2ServoPin = 29;  // not
 const int servo7Pin = 100;
 PWMServo ESC; // Create servo objects to control a servo or ESC with PWM
 PWMServo aileronServo;
 PWMServo elevatorServo;
 PWMServo rudderServo;
-PWMServo gimbalServo;
+PWMServo pivotServo;
 PWMServo servo6;
 PWMServo servo7;
 
@@ -214,7 +214,7 @@ unsigned long blink_counter, blink_delay;
 bool blinkAlternate;
 
 // Radio communication:
-unsigned long throttle_channel, roll_channel, pitch_channel, yaw_channel, mode1_channel, mode2_channel;
+unsigned long throttle_channel, roll_channel, pitch_channel, yaw_channel, pivot_channel, mode2_channel;
 unsigned long channel_1_pwm_prev, channel_2_pwm_prev, channel_3_pwm_prev, channel_4_pwm_prev;
 
 // PWM stuff
@@ -263,7 +263,7 @@ float error_yaw, error_yaw_prev, integral_yaw, integral_yaw_prev, derivative_yaw
 float m1_command_scaled, m2_command_scaled, m3_command_scaled, m4_command_scaled, m5_command_scaled, m6_command_scaled;
 int m1_command_PWM, m2_command_PWM, m3_command_PWM, m4_command_PWM, m5_command_PWM, m6_command_PWM;
 float s1_command_scaled, s2_command_scaled, s3_command_scaled, s4_command_scaled, s5_command_scaled, s6_command_scaled, s7_command_scaled; // 0 to 1
-int ESC_command_PWM, aileron_command_PWM, elevator_command_PWM, rudder_command_PWM, gimbalServo_command_PWM, s6_command_PWM, s7_command_PWM;
+int ESC_command_PWM, aileron_command_PWM, elevator_command_PWM, rudder_command_PWM, pivotServo_command_PWM, s6_command_PWM, s7_command_PWM;
 
 // function prototypes https://forum.arduino.cc/t/functions-at-the-end-or-beggining/530377/5
 
@@ -329,7 +329,7 @@ void dRehmFlightSetup()
   aileronServo.attach(aileronServoPin, 900, 2100);
   elevatorServo.attach(elevatorServoPin, 900, 2100);
   rudderServo.attach(rudderServoPin, 900, 2100);
-  gimbalServo.attach(gimbal1ServoPin, 900, 2100);
+  pivotServo.attach(pivotServoPin, 900, 2100);
   servo6.attach(gimbal2ServoPin, 900, 2100);
   servo7.attach(servo7Pin, 900, 2100);
 
@@ -346,7 +346,7 @@ void dRehmFlightSetup()
   roll_channel = roll_fs;
   pitch_channel = pitch_fs;
   yaw_channel = yaw_fs;
-  mode1_channel = mode1_fs;
+  pivot_channel = mode1_fs;
   mode2_channel = mode2_fs;
 
   // Initialize IMU communication
@@ -359,10 +359,10 @@ void dRehmFlightSetup()
   delay(10000);
   // Arm servo channels
   ESC.write(0);           // Command servo angle from 0-180 degrees (1000 to 2000 PWM)
-  aileronServo.write(0);  // Set these to 90 for servos if you do not want them to briefly max out on startup
-  elevatorServo.write(0); // Keep these at 0 if you are using servo outputs for motors
-  rudderServo.write(0);
-  gimbalServo.write(0);
+  aileronServo.write(90);  // Set these to 90 for servos if you do not want them to briefly max out on startup
+  elevatorServo.write(90); // Keep these at 0 if you are using servo outputs for motors
+  rudderServo.write(90);
+  pivotServo.write(90);
   servo6.write(0);
   servo7.write(0);
 
@@ -433,7 +433,7 @@ void dRehmFlightLoop() // for the setup and loop, ill prob just use this as the 
   aileronServo.write(aileron_command_PWM);
   elevatorServo.write(elevator_command_PWM);
   rudderServo.write(rudder_command_PWM);
-  gimbalServo.write(gimbalServo_command_PWM);
+  pivotServo.write(pivotServo_command_PWM);
   servo6.write(s6_command_PWM);
   servo7.write(s7_command_PWM);
 
@@ -1258,7 +1258,7 @@ void scaleCommands()
   aileron_command_PWM = constrain(aileron_command_PWM, 0, 180);
   elevator_command_PWM = constrain(elevator_command_PWM, 0, 180);
   rudder_command_PWM = constrain(rudder_command_PWM, 0, 180);
-  gimbalServo_command_PWM = constrain(gimbalServo_command_PWM, 0, 180);
+  pivotServo_command_PWM = constrain(pivotServo_command_PWM, 0, 180);
   s6_command_PWM = constrain(s6_command_PWM, 0, 180);
   s7_command_PWM = constrain(s7_command_PWM, 0, 180);
 }
@@ -1278,7 +1278,7 @@ void getCommands()
   roll_channel = getRadioPWM(2);
   pitch_channel = getRadioPWM(3);
   yaw_channel = getRadioPWM(4);
-  mode1_channel = getRadioPWM(5);
+  pivot_channel = getRadioPWM(5);
   mode2_channel = getRadioPWM(6);
 
 #elif defined USE_SBUS_RX
@@ -1354,7 +1354,7 @@ void failSafe()
     check3 = 1;
   if (yaw_channel > maxVal || yaw_channel < minVal)
     check4 = 1;
-  if (mode1_channel > maxVal || mode1_channel < minVal)
+  if (pivot_channel > maxVal || pivot_channel < minVal)
     check5 = 1;
   if (mode2_channel > maxVal || mode2_channel < minVal)
     check6 = 1;
@@ -1366,7 +1366,7 @@ void failSafe()
     roll_channel = roll_fs;
     pitch_channel = pitch_fs;
     yaw_channel = yaw_fs;
-    mode1_channel = mode1_fs;
+    pivot_channel = mode1_fs;
     mode2_channel = mode2_fs;
   }
 }
@@ -1590,7 +1590,7 @@ void throttleCut()
    * called before commandMotors() is called so that the last thing checked is if the user is giving permission to command
    * the motors to anything other than minimum value. Safety first.
    */
-  if (mode1_channel > 1500)
+  if (pivot_channel > 1500)
   {
     m1_command_PWM = 120;
     m2_command_PWM = 120;
@@ -1732,7 +1732,7 @@ void printRadioData()
     Serial.print(F(" CH4: "));
     Serial.print(yaw_channel);
     Serial.print(F(" CH5: "));
-    Serial.print(mode1_channel);
+    Serial.print(pivot_channel);
     Serial.print(F(" CH6: "));
     Serial.println(mode2_channel);
   }
@@ -1858,7 +1858,7 @@ void printServoCommands()
     Serial.print(F(" s4_command: "));
     Serial.print(rudder_command_PWM);
     Serial.print(F(" s5_command: "));
-    Serial.print(gimbalServo_command_PWM);
+    Serial.print(pivotServo_command_PWM);
     Serial.print(F(" s6_command: "));
     Serial.print(s6_command_PWM);
     Serial.print(F(" s7_command: "));
