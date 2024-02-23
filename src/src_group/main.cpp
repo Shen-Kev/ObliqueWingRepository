@@ -7,7 +7,6 @@
                                    //  Email: nrehm@umd.edu
 
 #include <Wire.h>      // I2C library
-#include "ASPD4525.h"  // Pitot tube library
 #include <SD.h>        // SD card library
 #define MOTOR_ACTIVE 1 // 1 = motor is active, 0 = motor is not active
 #define CONTROL_TEST 1 // 1 = control test, 0 = DS test
