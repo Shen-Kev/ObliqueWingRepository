@@ -21,10 +21,10 @@ float yaw_IMU_rad_prev;
 float heading_changed_last_loop;
 
 float desiredPivotServo_command_PWM = 90; // The desired sweep angle of the wing in degrees
-
+float pivotServo_command_PWM_float = 90;  // The current sweep angle of the wing in degrees
 // Variables for Data Logging
 const int COLUMNS = 11;            // 16 columns of data to be logged to the SD card
-const int ROWS = 9000;            //  rows of data to be logged to the SD card
+const int ROWS = 9000;             //  rows of data to be logged to the SD card
 float dataLogArray[ROWS][COLUMNS]; // The array that stores the data to be logged to the SD card
 boolean dataLogged = false;        // Used to determine if the data has been logged to the SD card
 boolean toggle = false;            // Used to toggle the LED
@@ -94,6 +94,9 @@ void setup()
 
     clearDataInRAM();
     setupSD();
+
+    Serial.println("SD setup complete");
+
     roll_channel = roll_fs;
     pitch_channel = pitch_fs;
     yaw_channel = yaw_fs;
@@ -106,6 +109,8 @@ void setup()
     pivotServo.write(90);
     delay(100);
     calibrateAttitude(); // runs IMU for a few seconds to allow it to stabilize
+
+    Serial.println("setup complete");
 }
 void loop()
 {
@@ -115,6 +120,9 @@ void loop()
     timeInMillis = millis();
     getIMUdata();
     Madgwick6DOF(GyroX, GyroY, GyroZ, -AccX, AccY, AccZ, dt);
+    // yaw and pitch are backwrads, so just flip them
+    yaw_IMU = -yaw_IMU;
+    pitch_IMU = -pitch_IMU;
 
     accelData[0] = AccX;
     accelData[1] = AccY;
@@ -123,18 +131,13 @@ void loop()
     gyroData[1] = GyroY * DEG_TO_RAD;
     gyroData[2] = GyroZ * DEG_TO_RAD;
 
-    
     getCommands();
-    failSafe();
-
+    // failSafe();
 
     pitch_IMU_rad = pitch_IMU * DEG_TO_RAD;
     roll_IMU_rad = roll_IMU * DEG_TO_RAD;
     yaw_IMU_rad = yaw_IMU * DEG_TO_RAD;
     getDesState();
-
-    Serial.println(yaw_channel);
-
     // WING PIVOT
     if (pivot_channel < 1400)
     {
@@ -153,7 +156,7 @@ void loop()
     else if (pivot_channel > 1600)
     {
         flight_phase = thirty_deg_sweep;
-        desiredPivotServo_command_PWM = 180;
+        desiredPivotServo_command_PWM = 140;
 
         // may change this based on pivot angle
         s2_command_scaled = roll_passthru;
@@ -161,15 +164,19 @@ void loop()
         s4_command_scaled = yaw_passthru;
     }
 
-    // slowly change pivotServo_command_PWM from where it is at the moment to the desiredPivotServo_command_PWM at a rate of 10 deg / s
-    if (pivotServo_command_PWM < desiredPivotServo_command_PWM - 10)
+    // slowly change pivotServo_command_PWM from where it is at the moment to the desiredPivotServo_command_PWM
+    if (pivotServo_command_PWM < desiredPivotServo_command_PWM - 1)
     {
-        pivotServo_command_PWM += 10 * dt;
+        pivotServo_command_PWM_float += 60 * dt;
     }
-    else if (pivotServo_command_PWM > desiredPivotServo_command_PWM + 10)
+    else if (pivotServo_command_PWM > desiredPivotServo_command_PWM + 1)
     {
-        pivotServo_command_PWM -= 10 * dt;
+        pivotServo_command_PWM_float -= 60 * dt;
     }
+
+    pivotServo_command_PWM = int(pivotServo_command_PWM_float);
+
+    Serial.println(pivotServo_command_PWM);
 
     // Log data to RAM
     if (loopCounter > (2000 / datalogRate)) // 2000 is the loop rate in microseconds
@@ -181,38 +188,38 @@ void loop()
     {
         loopCounter++;
     }
-
-    // Log data to SD in flight if needed
-    if (currentRow >= ROWS)
-    {
-        writeDataToSD();
-        delay(5);
-        clearDataInRAM();
-    }
-
-    // Log data to SD using switch (for use on the ground only)
-    else if (mode2_channel < 1500)
-    {
-        if (!dataLogged)
+    
+        // Log data to SD in flight if needed
+        if (currentRow >= ROWS)
         {
             writeDataToSD();
             delay(5);
             clearDataInRAM();
-            // blink the LED 3 times
-            for (int i = 0; i < 3; i++)
-            {
-                digitalWrite(13, HIGH);
-                delay(100);
-                digitalWrite(13, LOW);
-                delay(100);
-            }
         }
-        dataLogged = true;
-    }
-    else
-    {
-        dataLogged = false;
-    }
+
+        // Log data to SD using switch (for use on the ground only)
+        else if (mode2_channel < 1500)
+        {
+            if (!dataLogged)
+            {
+                writeDataToSD();
+                delay(5);
+                clearDataInRAM();
+                // blink the LED 3 times
+                for (int i = 0; i < 3; i++)
+                {
+                    digitalWrite(13, HIGH);
+                    delay(100);
+                    digitalWrite(13, LOW);
+                    delay(100);
+                }
+            }
+            dataLogged = true;
+        }
+        else
+        {
+            dataLogged = false;
+        }
 
     scaleCommands();
 
@@ -222,6 +229,27 @@ void loop()
     pivotServo.write(pivotServo_command_PWM);
     loopBlink();
     loopRate(2000);
+
+    // print roll pitch yaw angles
+    Serial.print(F("Roll: "));
+    Serial.print(roll_IMU);
+    Serial.print(F(" Pitch: "));
+    Serial.print(pitch_IMU);
+    Serial.print(F(" Yaw: "));
+    Serial.println(yaw_IMU);
+
+    // Serial.print(F(" CH1: "));
+    // Serial.print(throttle_channel);
+    // Serial.print(F(" CH2: "));
+    // Serial.print(roll_channel);
+    // Serial.print(F(" CH3: "));
+    // Serial.print(pitch_channel);
+    // Serial.print(F(" CH4: "));
+    // Serial.print(yaw_channel);
+    // Serial.print(F(" CH5: "));
+    // Serial.print(pivot_channel);
+    // Serial.print(F(" CH6: "));
+    // Serial.println(mode2_channel);
 }
 
 void setupSD()
@@ -281,9 +309,10 @@ void logDataToRAM()
 
     if (currentRow < ROWS)
     {
+
         // time and fight phase
-        dataLogArray[currentRow][0] = timeInMillis; // time in milliseconds
-        dataLogArray[currentRow][1] = flight_phase; // flight phase
+        dataLogArray[currentRow][0] = timeInMillis;           // time in milliseconds
+        dataLogArray[currentRow][1] = pivotServo_command_PWM; // sweep
 
         // roll variables
         dataLogArray[currentRow][2] = roll_IMU;                 // roll angle from IMU in degrees

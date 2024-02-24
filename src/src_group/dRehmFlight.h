@@ -191,7 +191,7 @@ const int ESCpin = 8;            // ESC
 const int aileronServoPin = 9;   // ailerons
 const int elevatorServoPin = 25; // elevator
 const int rudderServoPin = 24;   // rudder
-const int pivotServoPin = 28;  // gimbal
+const int pivotServoPin = 28;  // extra servo slot, pin 33
 const int gimbal2ServoPin = 29;  // not
 const int servo7Pin = 100;
 PWMServo ESC; // Create servo objects to control a servo or ESC with PWM
@@ -1949,6 +1949,7 @@ void getCh1()
   {
     channel_1_raw = micros() - rising_edge_start_1;
   }
+
 }
 
 void getCh2()
