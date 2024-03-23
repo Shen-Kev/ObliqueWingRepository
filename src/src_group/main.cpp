@@ -48,8 +48,26 @@ void clearDataInRAM();
 void writeDataToSD();
 void antiCouplingMixing();
 
+//define all the variables in the matrix K
+//EDIT THIS FOR TUNING
+const double K_phi_a = 0.0;
+const double K_theta_a = 0.0;
+const double K_psi_a = 0.0;
+const double K_phi_e = 0.0;
+const double K_theta_e = 0.0;
+const double K_psi_e = 0.0;
+const double K_phi_r = 0.0;
+const double K_theta_r = 0.0;
+const double K_psi_r = 0.0;
+
+//define varibles in P
+double P_phi = 0.0;
+double P_theta = 0.0;
+double P_psi = 0.0;
+
+
 // define 3x3 gain matrix for coupling
-double K[3][3] = {
+const double K[3][3] = {
     {K_phi_a, K_theta_a, K_psi_a},
     {K_phi_e, K_theta_e, K_psi_e},
     {K_phi_r, K_theta_r, K_psi_r}};
