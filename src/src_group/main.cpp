@@ -303,6 +303,7 @@ void setupSD()
     }
 }
 
+
 void logDataToRAM()
 {
     // log data to RAM
@@ -312,26 +313,27 @@ void logDataToRAM()
 
         // time and fight phase
         dataLogArray[currentRow][0] = timeInMillis;           // time in milliseconds
-        dataLogArray[currentRow][1] = pivotServo_command_PWM; // sweep
+        dataLogArray[currentRow][1] = pivotServo_command_PWM; // sweep (even though it's not changing)
 
         // roll variables
-        dataLogArray[currentRow][2] = roll_IMU;                 // roll angle from IMU in degrees
+        dataLogArray[currentRow][2] = GyroX;                 // roll rate
         dataLogArray[currentRow][3] = roll_des;                 // desired roll angle in degrees
         dataLogArray[currentRow][4] = aileron_command_PWM - 90; // aileron command in degrees (90 is neutral)
 
         // pitch variables
-        dataLogArray[currentRow][5] = pitch_IMU;                 // pitch angle from IMU in degrees
+        dataLogArray[currentRow][5] = GyroY;                 // pitch rate
         dataLogArray[currentRow][6] = pitch_des;                 // pilot desired pitch angle in degrees
         dataLogArray[currentRow][7] = elevator_command_PWM - 90; // elevator command in degrees (90 is neutral)
 
         // yaw
-        dataLogArray[currentRow][8] = yaw_IMU; // yaw angle from DS in degrees
+        dataLogArray[currentRow][8] = GyroZ; // yaw rate
         dataLogArray[currentRow][9] = yaw_des;
         dataLogArray[currentRow][10] = rudder_command_PWM - 90; // rudder command in degrees (90 is neutral)
 
         currentRow++;
     }
 }
+
 
 void writeDataToSD()
 {
