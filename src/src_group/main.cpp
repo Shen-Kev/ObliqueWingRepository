@@ -35,8 +35,8 @@ boolean logSuccessful = false;     // Used to determine if the data has been suc
 float flight_phase; // The current flight phase
 enum flight_phases  // Flight phases for the flight controller
 {
-    no_sweep = 1,
-    thirty_deg_sweep = 2,
+    manual_control = 1,
+    anti_coupling = 2,
 };
 
 File dataFile; // File object for SD card
@@ -46,6 +46,18 @@ void setupSD();
 void logDataToRAM();
 void clearDataInRAM();
 void writeDataToSD();
+void antiCouplingMixing();
+
+// define 3x3 gain matrix for coupling
+double K[3][3] = {
+    {K_phi_a, K_theta_a, K_psi_a},
+    {K_phi_e, K_theta_e, K_psi_e},
+    {K_phi_r, K_theta_r, K_psi_r}};
+
+double P[3] = {P_phi, P_theta, P_psi};
+
+// Resultant C vector (3x1)
+double C[3];
 
 // Flight Controller Setup
 // This function is run once when the flight controller is turned on
@@ -138,15 +150,16 @@ void loop()
     roll_IMU_rad = roll_IMU * DEG_TO_RAD;
     yaw_IMU_rad = yaw_IMU * DEG_TO_RAD;
     getDesState();
-    // WING PIVOT
+
+    // FLIGHT COMPUTER ACTIVITY
     if (pivot_channel < 1400)
     {
-        flight_phase = no_sweep;
+        flight_phase = manual_control;
         desiredPivotServo_command_PWM = 0;
 
-        s2_command_scaled = roll_passthru;
-        s3_command_scaled = pitch_passthru;
-        s4_command_scaled = yaw_passthru;
+        aileron_command_scaled = roll_passthru;
+        elevator_command_scaled = pitch_passthru;
+        rudder_command_scaled = yaw_passthru;
         // no pid control for now
         //  integral_pitch = 0;
         //  integral_roll = 0;
@@ -155,28 +168,17 @@ void loop()
     }
     else if (pivot_channel > 1600)
     {
-        flight_phase = thirty_deg_sweep;
+        aileron_command_scaled = roll_passthru;
+        elevator_command_scaled = pitch_passthru;
+        rudder_command_scaled = yaw_passthru;
+        flight_phase = anti_coupling;
+        antiCouplingMixing();
+
         desiredPivotServo_command_PWM = 140;
 
-        // may change this based on pivot angle
-        s2_command_scaled = roll_passthru;
-        s3_command_scaled = pitch_passthru;
-        s4_command_scaled = yaw_passthru;
+
     }
 
-    // slowly change pivotServo_command_PWM from where it is at the moment to the desiredPivotServo_command_PWM
-    if (pivotServo_command_PWM < desiredPivotServo_command_PWM - 1)
-    {
-        pivotServo_command_PWM_float += 60 * dt;
-    }
-    else if (pivotServo_command_PWM > desiredPivotServo_command_PWM + 1)
-    {
-        pivotServo_command_PWM_float -= 60 * dt;
-    }
-
-    pivotServo_command_PWM = int(pivotServo_command_PWM_float);
-
-    Serial.println(pivotServo_command_PWM);
 
     // Log data to RAM
     if (loopCounter > (2000 / datalogRate)) // 2000 is the loop rate in microseconds
@@ -188,38 +190,42 @@ void loop()
     {
         loopCounter++;
     }
-    
-        // Log data to SD in flight if needed
-        if (currentRow >= ROWS)
+
+    // Log data to SD in flight if needed
+    if (currentRow >= ROWS)
+    {
+        writeDataToSD();
+        delay(5);
+        clearDataInRAM();
+    }
+
+    // Log data to SD using switch (for use on the ground only)
+    else if (mode2_channel < 1500)
+    {
+        if (!dataLogged)
         {
             writeDataToSD();
             delay(5);
             clearDataInRAM();
-        }
-
-        // Log data to SD using switch (for use on the ground only)
-        else if (mode2_channel < 1500)
-        {
-            if (!dataLogged)
+            // blink the LED 3 times
+            for (int i = 0; i < 3; i++)
             {
-                writeDataToSD();
-                delay(5);
-                clearDataInRAM();
-                // blink the LED 3 times
-                for (int i = 0; i < 3; i++)
-                {
-                    digitalWrite(13, HIGH);
-                    delay(100);
-                    digitalWrite(13, LOW);
-                    delay(100);
-                }
+                digitalWrite(13, HIGH);
+                delay(100);
+                digitalWrite(13, LOW);
+                delay(100);
             }
-            dataLogged = true;
         }
-        else
-        {
-            dataLogged = false;
-        }
+        dataLogged = true;
+    }
+    else
+    {
+        dataLogged = false;
+    }
+
+
+
+
 
     scaleCommands();
 
@@ -230,13 +236,13 @@ void loop()
     loopBlink();
     loopRate(2000);
 
-    // print roll pitch yaw angles
-    Serial.print(F("Roll: "));
-    Serial.print(roll_IMU);
-    Serial.print(F(" Pitch: "));
-    Serial.print(pitch_IMU);
-    Serial.print(F(" Yaw: "));
-    Serial.println(yaw_IMU);
+    // // print roll pitch yaw angles
+    // Serial.print(F("Roll: "));
+    // Serial.print(roll_IMU);
+    // Serial.print(F(" Pitch: "));
+    // Serial.print(pitch_IMU);
+    // Serial.print(F(" Yaw: "));
+    // Serial.println(yaw_IMU);
 
     // Serial.print(F(" CH1: "));
     // Serial.print(throttle_channel);
@@ -303,7 +309,6 @@ void setupSD()
     }
 }
 
-
 void logDataToRAM()
 {
     // log data to RAM
@@ -312,16 +317,16 @@ void logDataToRAM()
     {
 
         // time and fight phase
-        dataLogArray[currentRow][0] = timeInMillis;           // time in milliseconds
-        dataLogArray[currentRow][1] = pivotServo_command_PWM; // sweep (even though it's not changing)
+        dataLogArray[currentRow][0] = timeInMillis; // time in milliseconds
+        dataLogArray[currentRow][1] = flight_phase; // if anticoupling mixing is active
 
         // roll variables
-        dataLogArray[currentRow][2] = GyroX;                 // roll rate
+        dataLogArray[currentRow][2] = GyroX;                    // roll rate
         dataLogArray[currentRow][3] = roll_des;                 // desired roll angle in degrees
         dataLogArray[currentRow][4] = aileron_command_PWM - 90; // aileron command in degrees (90 is neutral)
 
         // pitch variables
-        dataLogArray[currentRow][5] = GyroY;                 // pitch rate
+        dataLogArray[currentRow][5] = GyroY;                     // pitch rate
         dataLogArray[currentRow][6] = pitch_des;                 // pilot desired pitch angle in degrees
         dataLogArray[currentRow][7] = elevator_command_PWM - 90; // elevator command in degrees (90 is neutral)
 
@@ -333,7 +338,6 @@ void logDataToRAM()
         currentRow++;
     }
 }
-
 
 void writeDataToSD()
 {
@@ -360,4 +364,28 @@ void clearDataInRAM()
         }
     }
     currentRow = 0;
+}
+
+void antiCouplingMixing()
+{
+    // multipy gyroData matrix, a 1x3 matrix, by the coupling matrix, a 3x3 matrix
+
+    P[0] = aileron_command_scaled; 
+    P[1] = elevator_command_scaled;
+    P[2] = rudder_command_scaled;
+
+    // Perform the matrix multiplication
+    for (int i = 0; i < 3; i++)
+    {
+        C[i] = 0; // Initialize the result array with zero
+        for (int j = 0; j < 3; j++)
+        {
+            C[i] += K[i][j] * P[j];
+        }
+    }
+
+    aileron_command_scaled = C[0];
+    elevator_command_scaled = C[1];
+    rudder_command_scaled  = C[2];
+
 }

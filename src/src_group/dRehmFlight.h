@@ -262,7 +262,7 @@ float error_yaw, error_yaw_prev, integral_yaw, integral_yaw_prev, derivative_yaw
 // Mixer
 float m1_command_scaled, m2_command_scaled, m3_command_scaled, m4_command_scaled, m5_command_scaled, m6_command_scaled;
 int m1_command_PWM, m2_command_PWM, m3_command_PWM, m4_command_PWM, m5_command_PWM, m6_command_PWM;
-float s1_command_scaled, s2_command_scaled, s3_command_scaled, s4_command_scaled, s5_command_scaled, s6_command_scaled, s7_command_scaled; // 0 to 1
+float s1_command_scaled, aileron_command_scaled, elevator_command_scaled, rudder_command_scaled, s5_command_scaled, s6_command_scaled, s7_command_scaled; // 0 to 1
 int ESC_command_PWM, aileron_command_PWM, elevator_command_PWM, rudder_command_PWM, pivotServo_command_PWM, s6_command_PWM, s7_command_PWM;
 
 // function prototypes https://forum.arduino.cc/t/functions-at-the-end-or-beggining/530377/5
@@ -474,9 +474,9 @@ void controlMixer()
 */
   // 0.5 is centered servo, 0.0 is zero throttle if connecting to ESC for conventional PWM, 1.0 is max throttle
   s1_command_scaled = 0;
-  s2_command_scaled = 0;
-  s3_command_scaled = 0;
-  s4_command_scaled = 0;
+  aileron_command_scaled = 0;
+  elevator_command_scaled = 0;
+  rudder_command_scaled = 0;
   s5_command_scaled = 0;
   s6_command_scaled = 0;
   s7_command_scaled = 0;
@@ -1225,18 +1225,18 @@ void scaleCommands()
 */
 
   // rudder and elevator reversed
-  s3_command_scaled = -s3_command_scaled;
-  s4_command_scaled = -s4_command_scaled;
+  elevator_command_scaled = -elevator_command_scaled;
+  rudder_command_scaled = -rudder_command_scaled;
 
-  s2_command_scaled += 0.5; // center back on 0.5
-  s3_command_scaled += 0.5;
-  s4_command_scaled += 0.5;
+  aileron_command_scaled += 0.5; // center back on 0.5
+  elevator_command_scaled += 0.5;
+  rudder_command_scaled += 0.5;
 
   // Scaled to 0-180 for servo library
   ESC_command_PWM = s1_command_scaled * 180;
-  aileron_command_PWM = s2_command_scaled * 180;
-  elevator_command_PWM = s3_command_scaled * 180;
-  rudder_command_PWM = s4_command_scaled * 180;
+  aileron_command_PWM = aileron_command_scaled * 180;
+  elevator_command_PWM = elevator_command_scaled * 180;
+  rudder_command_PWM = rudder_command_scaled * 180;
   // s5_command_PWM = s5_command_scaled * 180;
   s6_command_PWM = s6_command_scaled * 180;
   s7_command_PWM = s7_command_scaled * 180;
