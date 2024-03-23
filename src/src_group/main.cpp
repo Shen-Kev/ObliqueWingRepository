@@ -50,15 +50,19 @@ void antiCouplingMixing();
 
 //define all the variables in the matrix K
 //EDIT THIS FOR TUNING
-const double K_phi_a = 0.0;
+
+//phi is roll, theta is pitch, psi is yaw
+// a is aileron, e is elevator, r is rudder
+
+const double K_phi_a = 1.0;
 const double K_theta_a = 0.0;
 const double K_psi_a = 0.0;
 const double K_phi_e = 0.0;
-const double K_theta_e = 0.0;
+const double K_theta_e = 1.0;
 const double K_psi_e = 0.0;
 const double K_phi_r = 0.0;
 const double K_theta_r = 0.0;
-const double K_psi_r = 0.0;
+const double K_psi_r = 1.0;
 
 //define varibles in P
 double P_phi = 0.0;
