@@ -54,15 +54,15 @@ void antiCouplingMixing();
 //phi is roll, theta is pitch, psi is yaw
 // a is aileron, e is elevator, r is rudder
 
-const double K_phi_a = 1.0;
+const double K_phi_a = 1.0; //KEEP AT 1.0 BECAUSE THIS IS JUST PASSTHROUGH
 const double K_theta_a = 0.0;
 const double K_psi_a = 0.0;
 const double K_phi_e = 0.0;
-const double K_theta_e = 1.0;
+const double K_theta_e = 1.0; //KEEP AT 1.0 BECAUSE THIS IS JUST PASSTHROUGH
 const double K_psi_e = 0.0;
 const double K_phi_r = 0.0;
 const double K_theta_r = 0.0;
-const double K_psi_r = 1.0;
+const double K_psi_r = 1.0; //KEEP AT 1.0 BECAUSE THIS IS JUST PASSTHROUGH
 
 //define varibles in P
 double P_phi = 0.0;
