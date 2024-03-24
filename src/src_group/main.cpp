@@ -288,8 +288,27 @@ void setupSD()
     }
 
     // write a line of sample data to the SD card
-    dataFile = SD.open("SDtest.txt", FILE_WRITE);
-    dataFile.print("TEST DATA");
+    dataFile = SD.open("K matrix.txt", FILE_WRITE);
+    //print the K matrix to the file, labeling each element
+    dataFile.print("K_phi_a: ");
+    dataFile.println(K_phi_a);
+    dataFile.print("K_theta_a: ");
+    dataFile.println(K_theta_a);
+    dataFile.print("K_psi_a: ");
+    dataFile.println(K_psi_a);
+    dataFile.print("K_phi_e: ");
+    dataFile.println(K_phi_e);
+    dataFile.print("K_theta_e: ");
+    dataFile.println(K_theta_e);
+    dataFile.print("K_psi_e: ");
+    dataFile.println(K_psi_e);
+    dataFile.print("K_phi_r: ");
+    dataFile.println(K_phi_r);
+    dataFile.print("K_theta_r: ");
+    dataFile.println(K_theta_r);
+    dataFile.print("K_psi_r: ");
+    dataFile.println(K_psi_r);
+    
     dataFile.println();
     dataFile.close();
 
