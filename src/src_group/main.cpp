@@ -293,29 +293,6 @@ void setupSD()
     dataFile.println();
     dataFile.close();
 
-        // write a line of sample data to the SD card
-    dataFile = SD.open("K matrix.txt", FILE_WRITE);
-    //print the K matrix to the file, labeling each element
-    dataFile.print("K_phi_a: ");
-    dataFile.println(K_phi_a);
-    dataFile.print("K_theta_a: ");
-    dataFile.println(K_theta_a);
-    dataFile.print("K_psi_a: ");
-    dataFile.println(K_psi_a);
-    dataFile.print("K_phi_e: ");
-    dataFile.println(K_phi_e);
-    dataFile.print("K_theta_e: ");
-    dataFile.println(K_theta_e);
-    dataFile.print("K_psi_e: ");
-    dataFile.println(K_psi_e);
-    dataFile.print("K_phi_r: ");
-    dataFile.println(K_phi_r);
-    dataFile.print("K_theta_r: ");
-    dataFile.println(K_theta_r);
-    dataFile.print("K_psi_r: ");
-    dataFile.println(K_psi_r);
-    dataFile.close();
-
     delay(100);
 
     // read the line of sample data from the SD card, only continue if it the data is correct
@@ -344,6 +321,29 @@ void setupSD()
         dataFile.close();
     }
 
+        // write a line of sample data to the SD card
+    dataFile = SD.open("K matrix.txt", FILE_WRITE);
+    //print the K matrix to the file, labeling each element
+    dataFile.print("K_phi_a: ");
+    dataFile.println(K_phi_a);
+    dataFile.print("K_theta_a: ");
+    dataFile.println(K_theta_a);
+    dataFile.print("K_psi_a: ");
+    dataFile.println(K_psi_a);
+    dataFile.print("K_phi_e: ");
+    dataFile.println(K_phi_e);
+    dataFile.print("K_theta_e: ");
+    dataFile.println(K_theta_e);
+    dataFile.print("K_psi_e: ");
+    dataFile.println(K_psi_e);
+    dataFile.print("K_phi_r: ");
+    dataFile.println(K_phi_r);
+    dataFile.print("K_theta_r: ");
+    dataFile.println(K_theta_r);
+    dataFile.print("K_psi_r: ");
+    dataFile.println(K_psi_r);
+    dataFile.close();
+    
     // blink LED 10 times to indicate SD card is ready
     for (int i = 0; i < 10; i++)
     {
