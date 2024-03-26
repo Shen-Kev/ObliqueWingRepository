@@ -107,14 +107,6 @@ void setup()
     K_phi_psi = K_phi_psi * K_psi_phi_r2;
     K_theta_psi = K_theta_psi * K_psi_theta_r2;
 
-    //invert the ones that have phi bc roll is inverted, keep the rest the same
-    K_theta_phi = -K_theta_phi;
-    K_psi_phi = -K_psi_phi;
-    K_phi_theta = -K_phi_theta;
-    K_psi_theta = K_psi_theta;
-    K_phi_psi = -K_phi_psi;
-    K_theta_psi = K_theta_psi;
-
 
     // Constants for PID (no PID control for now...)
     // Kp_roll_angle = 1.0;
@@ -173,6 +165,25 @@ void setup()
     pivotServo.write(90);
     delay(100);
     calibrateAttitude(); // runs IMU for a few seconds to allow it to stabilize
+
+
+    //invert the ones that have phi bc roll is inverted, keep the rest the same
+    K_theta_phi = -K_theta_phi;
+    K_psi_phi = -K_psi_phi;
+    K_phi_theta = -K_phi_theta;
+    K_psi_theta = K_psi_theta;
+    K_phi_psi = -K_phi_psi;
+    K_theta_psi = K_theta_psi;
+
+
+    //multilpy all by 100 to exggerate so I can see JUST FOR TESTING
+    // K_theta_phi = K_theta_phi * 10;
+    // K_psi_phi = K_psi_phi * 10;
+    // K_phi_theta = K_phi_theta * 10;
+    // K_psi_theta = K_psi_theta * 10;
+    // K_phi_psi = K_phi_psi * 10;
+    // K_theta_psi = K_theta_psi * 10;
+    
 
     Serial.println("setup complete");
 }
