@@ -55,29 +55,60 @@ void serialMonitor();
 // phi is roll, theta is pitch, psi is yaw
 //  a is aileron, e is elevator, r is rudder
 
-
-//NOTE: ROLL RATE IS THE ONLY ONE THAT ISNT INVERTED so when roll rate is with something else, change the sign of the gain
-
 // aerodynamic coupling gains (relative to the ratio of one roll/pitch/yaw rate to another during a test manuever)
-const double K_theta_phi = 0.313; //(really is negative, but bc roll inverted this gain is positive)
-const double K_psi_phi = 0.0; //would invert too
-const double K_phi_theta = 0.242; //(really is negative, but bc roll inverted this gain is positive)
-const double K_psi_theta = 0.407;
-const double K_phi_psi = 0.0; //would invert too 
-const double K_theta_psi = 0.312;
+double K_theta_phi; //(really is negative, but bc roll inverted this gain is positive)
+double K_psi_phi;   // would invert too
+double K_phi_theta; //(really is negative, but bc roll inverted this gain is positive)
+double K_psi_theta;
+double K_phi_psi; // would invert too
+double K_theta_psi;
+
+double K_phi_theta_r2; // phi and theta have an r2 value
+double K_psi_phi_r2;   // psi and phi have an r2 value
+double K_psi_theta_r2; // psi and theta have an r2 value
+
 
 // effectivness of control surfaces (ratio of control surface deflection to aircraft roll/pitch/yaw rate)
 // or maybe this is just manualy tuned idk
-//DIVIDE BY 10 BECAUSE ITS EFFECT IS TOO LARGE... they are all still relative to each other tho so it ok
-double P_phi = 0.0814/10;
-double P_theta = 0.0987/10;
-double P_psi = 0.055/10;
+double P_phi;
+double P_theta;
+double P_psi;
+
+// OOH MULTIPLY THEM BY THEIR VARIATIONS
 
 // Flight Controller Setup
 // This function is run once when the flight controller is turned on
 // It is used to initialize the flight controller and set the initial values of the variables and objects used in the flight controller loop function (loop())
 void setup()
 {
+
+    // NOTE: ROLL RATE IS THE ONLY ONE THAT ISNT INVERTED so when roll rate is with something else, change the sign of the gain
+
+    // constants for aero coupling (each aero movement relative to another aero movement)
+    K_theta_phi = 0.303;
+    K_psi_phi = 0.454;
+    K_phi_theta = 0.222;
+    K_psi_theta = 0.305;
+    K_phi_psi = 0.152;
+    K_theta_psi = 0.140;
+
+    //r2 values
+    K_phi_theta_r2 = 0.067; //roll pitch r2 doesnt matte rorder
+    K_psi_phi_r2 = 0.069; // yaw roll r2 doesnt matter order
+    K_psi_theta_r2 = 0.043; // yaw pitch r2 doesnt matter order
+
+    P_phi = 0.0765;
+    P_theta = 0.125;
+    P_psi = 0.051;
+
+    // mulitply each aero coupling gain with its r^2 to get final gains
+    K_theta_phi = K_theta_phi * K_phi_theta_r2;
+    K_psi_phi = K_psi_phi * K_psi_phi_r2;
+    K_phi_theta = K_phi_theta * K_phi_theta_r2;
+    K_psi_theta = K_psi_theta * K_psi_theta_r2;
+    K_phi_psi = K_phi_psi * K_psi_phi_r2;
+    K_theta_psi = K_theta_psi * K_psi_theta_r2;
+
     // Constants for PID (no PID control for now...)
     // Kp_roll_angle = 1.0;
     // Ki_roll_angle = 0.3;
@@ -140,7 +171,7 @@ void setup()
 }
 void loop()
 {
-    //serialMonitor();
+    // serialMonitor();
     prev_time = current_time;
     current_time = micros();
     dt = (current_time - prev_time) / 1000000.0;
@@ -333,21 +364,21 @@ void logDataToRAM()
     if (currentRow < ROWS)
     {
 
-        //NOTE: everything except roll rate and elevator command is somehow inverse but everything works, so I'll just invert it in the data printing here
-        //note this might make some of the gains backwards but ill just have to test it
+        // NOTE: everything except roll rate and elevator command is somehow inverse but everything works, so I'll just invert it in the data printing here
+        // note this might make some of the gains backwards but ill just have to test it
 
         // time and fight phase
         dataLogArray[currentRow][0] = timeInMillis; // time in milliseconds
         dataLogArray[currentRow][1] = flight_phase; // if anticoupling mixing is active
 
         // roll variables
-        dataLogArray[currentRow][2] = GyroX;                    // roll rate
-        dataLogArray[currentRow][3] = -roll_des;                 // desired roll angle in degrees
+        dataLogArray[currentRow][2] = GyroX;                       // roll rate
+        dataLogArray[currentRow][3] = -roll_des;                   // desired roll angle in degrees
         dataLogArray[currentRow][4] = -(aileron_command_PWM - 90); // aileron command in degrees (90 is neutral)
 
         // pitch variables
-        dataLogArray[currentRow][5] = -GyroY;                     // pitch rate
-        dataLogArray[currentRow][6] = -pitch_des;                 // pilot desired pitch angle in degrees
+        dataLogArray[currentRow][5] = -GyroY;                    // pitch rate
+        dataLogArray[currentRow][6] = -pitch_des;                // pilot desired pitch angle in degrees
         dataLogArray[currentRow][7] = elevator_command_PWM - 90; // elevator command in degrees (90 is neutral)
 
         // yaw
@@ -395,10 +426,10 @@ void antiCouplingMixing()
 
 void serialMonitor()
 {
-    //print out the data that would be logged to ram
+    // print out the data that would be logged to ram
     Serial.print("Time: ");
     Serial.print(timeInMillis);
-    Serial.print(" Flight Phase: ");    
+    Serial.print(" Flight Phase: ");
     Serial.print(flight_phase);
     Serial.print(" Roll Rate: ");
     Serial.print(GyroX);
@@ -419,5 +450,4 @@ void serialMonitor()
     Serial.print(" Rudder Command: ");
     Serial.print(-(rudder_command_PWM - 90));
     Serial.println();
-
 }
