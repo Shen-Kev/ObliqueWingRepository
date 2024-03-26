@@ -55,19 +55,19 @@ void serialMonitor();
 // phi is roll, theta is pitch, psi is yaw
 //  a is aileron, e is elevator, r is rudder
 
-// aerodynamic coupling gains
-const double K_theta_phi = -0.003;
+// aerodynamic coupling gains (relative to the ratio of one roll/pitch/yaw rate to another during a test manuever)
+const double K_theta_phi = -0.313;
 const double K_psi_phi = 0.0;
-const double K_phi_theta = 0.002;
-const double K_psi_theta = 0.0;
+const double K_phi_theta = -0.242;
+const double K_psi_theta = 0.407;
 const double K_phi_psi = 0.0;
-const double K_theta_psi = 0.0;
+const double K_theta_psi = 0.312;
 
 // effectivness of control surfaces (ratio of control surface deflection to aircraft roll/pitch/yaw rate)
 // or maybe this is just manualy tuned idk
-double P_phi = 1.00;
-double P_theta = 1.00;
-double P_psi = 1.00;
+double P_phi = 0.0814;
+double P_theta = 0.0987;
+double P_psi = 0.055;
 
 // Flight Controller Setup
 // This function is run once when the flight controller is turned on
@@ -284,31 +284,31 @@ void setupSD()
 
     dataFile = SD.open("gains.txt", FILE_WRITE);
     dataFile.print("K_theta_phi: ");
-    dataFile.print(K_theta_phi, 3);
+    dataFile.print(K_theta_phi, 4);
     dataFile.println();
     dataFile.print("K_psi_phi: ");
-    dataFile.print(K_psi_phi, 3);
+    dataFile.print(K_psi_phi, 4);
     dataFile.println();
     dataFile.print("K_phi_theta: ");
-    dataFile.print(K_phi_theta, 3);
+    dataFile.print(K_phi_theta, 4);
     dataFile.println();
     dataFile.print("K_psi_theta: ");
-    dataFile.print(K_psi_theta, 3);
+    dataFile.print(K_psi_theta, 4);
     dataFile.println();
     dataFile.print("K_phi_psi: ");
-    dataFile.print(K_phi_psi, 3);
+    dataFile.print(K_phi_psi, 4);
     dataFile.println();
     dataFile.print("K_theta_psi: ");
-    dataFile.print(K_theta_psi, 3);
+    dataFile.print(K_theta_psi, 4);
     dataFile.println();
     dataFile.print("P_phi: ");
-    dataFile.print(P_phi, 3);
+    dataFile.print(P_phi, 4);
     dataFile.println();
     dataFile.print("P_theta: ");
-    dataFile.print(P_theta, 3);
+    dataFile.print(P_theta, 4);
     dataFile.println();
     dataFile.print("P_psi: ");
-    dataFile.print(P_psi, 3);
+    dataFile.print(P_psi, 4);
     dataFile.println();
     dataFile.close();
 
@@ -384,9 +384,9 @@ void clearDataInRAM()
 
 void antiCouplingMixing()
 {
-    aileron_command_scaled = (aileron_command_scaled + K_theta_phi * GyroY + K_psi_phi * GyroZ) * P_phi;
-    elevator_command_scaled = (elevator_command_scaled + K_phi_theta * GyroX + K_psi_theta * GyroZ) * P_theta;
-    rudder_command_scaled = (rudder_command_scaled + K_phi_psi * GyroX + K_theta_psi * GyroY) * P_psi;
+    aileron_command_scaled = aileron_command_scaled + (K_theta_phi * GyroY + K_psi_phi * GyroZ) * P_phi;
+    elevator_command_scaled = elevator_command_scaled + (K_phi_theta * GyroX + K_psi_theta * GyroZ) * P_theta;
+    rudder_command_scaled = rudder_command_scaled + (K_phi_psi * GyroX + K_theta_psi * GyroY) * P_psi;
 }
 
 void serialMonitor()
