@@ -55,12 +55,15 @@ void serialMonitor();
 // phi is roll, theta is pitch, psi is yaw
 //  a is aileron, e is elevator, r is rudder
 
+
+//NOTE: ROLL RATE IS THE ONLY ONE THAT ISNT INVERTED so when roll rate is with something else, change the sign of the gain
+
 // aerodynamic coupling gains (relative to the ratio of one roll/pitch/yaw rate to another during a test manuever)
-const double K_theta_phi = -0.313;
-const double K_psi_phi = 0.0;
-const double K_phi_theta = -0.242;
+const double K_theta_phi = 0.313; //(really is negative, but bc roll inverted this gain is positive)
+const double K_psi_phi = 0.0; //would invert too
+const double K_phi_theta = 0.242; //(really is negative, but bc roll inverted this gain is positive)
 const double K_psi_theta = 0.407;
-const double K_phi_psi = 0.0;
+const double K_phi_psi = 0.0; //would invert too 
 const double K_theta_psi = 0.312;
 
 // effectivness of control surfaces (ratio of control surface deflection to aircraft roll/pitch/yaw rate)
@@ -329,7 +332,7 @@ void logDataToRAM()
     if (currentRow < ROWS)
     {
 
-        //NOTE: everything except roll rate is somehow inverse but everything works, so I'll just invert it in the data printing here
+        //NOTE: everything except roll rate and elevator command is somehow inverse but everything works, so I'll just invert it in the data printing here
         //note this might make some of the gains backwards but ill just have to test it
 
         // time and fight phase
