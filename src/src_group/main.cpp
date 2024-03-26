@@ -56,17 +56,18 @@ void serialMonitor();
 //  a is aileron, e is elevator, r is rudder
 
 // aerodynamic coupling gains
-const double K_theta_phi = 0.0;
+const double K_theta_phi = -0.003;
 const double K_psi_phi = 0.0;
-const double K_phi_theta = 0.0;
+const double K_phi_theta = 0.002;
 const double K_psi_theta = 0.0;
 const double K_phi_psi = 0.0;
 const double K_theta_psi = 0.0;
 
 // effectivness of control surfaces (ratio of control surface deflection to aircraft roll/pitch/yaw rate)
-double P_phi = 1.0;
-double P_theta = 1.0;
-double P_psi = 1.0;
+// or maybe this is just manualy tuned idk
+double P_phi = 1.00;
+double P_theta = 1.00;
+double P_psi = 1.00;
 
 // Flight Controller Setup
 // This function is run once when the flight controller is turned on
@@ -135,7 +136,7 @@ void setup()
 }
 void loop()
 {
-    serialMonitor();
+    //serialMonitor();
     prev_time = current_time;
     current_time = micros();
     dt = (current_time - prev_time) / 1000000.0;
@@ -283,31 +284,31 @@ void setupSD()
 
     dataFile = SD.open("gains.txt", FILE_WRITE);
     dataFile.print("K_theta_phi: ");
-    dataFile.print(K_theta_phi);
+    dataFile.print(K_theta_phi, 3);
     dataFile.println();
     dataFile.print("K_psi_phi: ");
-    dataFile.print(K_psi_phi);
+    dataFile.print(K_psi_phi, 3);
     dataFile.println();
     dataFile.print("K_phi_theta: ");
-    dataFile.print(K_phi_theta);
+    dataFile.print(K_phi_theta, 3);
     dataFile.println();
     dataFile.print("K_psi_theta: ");
-    dataFile.print(K_psi_theta);
+    dataFile.print(K_psi_theta, 3);
     dataFile.println();
     dataFile.print("K_phi_psi: ");
-    dataFile.print(K_phi_psi);
+    dataFile.print(K_phi_psi, 3);
     dataFile.println();
     dataFile.print("K_theta_psi: ");
-    dataFile.print(K_theta_psi);
+    dataFile.print(K_theta_psi, 3);
     dataFile.println();
     dataFile.print("P_phi: ");
-    dataFile.print(P_phi);
+    dataFile.print(P_phi, 3);
     dataFile.println();
     dataFile.print("P_theta: ");
-    dataFile.print(P_theta);
+    dataFile.print(P_theta, 3);
     dataFile.println();
     dataFile.print("P_psi: ");
-    dataFile.print(P_psi);
+    dataFile.print(P_psi, 3);
     dataFile.println();
     dataFile.close();
 
