@@ -49,8 +49,6 @@ void writeDataToSD();
 void antiCouplingMixing();
 void serialMonitor();
 
-// define all the variables in the matrix K
-// EDIT THIS FOR TUNING
 
 // phi is roll, theta is pitch, psi is yaw
 //  a is aileron, e is elevator, r is rudder
