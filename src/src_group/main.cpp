@@ -68,9 +68,10 @@ const double K_theta_psi = 0.312;
 
 // effectivness of control surfaces (ratio of control surface deflection to aircraft roll/pitch/yaw rate)
 // or maybe this is just manualy tuned idk
-double P_phi = 0.0814;
-double P_theta = 0.0987;
-double P_psi = 0.055;
+//DIVIDE BY 10 BECAUSE ITS EFFECT IS TOO LARGE... they are all still relative to each other tho so it ok
+double P_phi = 0.0814/10;
+double P_theta = 0.0987/10;
+double P_psi = 0.055/10;
 
 // Flight Controller Setup
 // This function is run once when the flight controller is turned on
