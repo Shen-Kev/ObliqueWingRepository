@@ -47,39 +47,26 @@ void logDataToRAM();
 void clearDataInRAM();
 void writeDataToSD();
 void antiCouplingMixing();
+void serialMonitor();
 
-//define all the variables in the matrix K
-//EDIT THIS FOR TUNING
+// define all the variables in the matrix K
+// EDIT THIS FOR TUNING
 
-//phi is roll, theta is pitch, psi is yaw
-// a is aileron, e is elevator, r is rudder
+// phi is roll, theta is pitch, psi is yaw
+//  a is aileron, e is elevator, r is rudder
 
-const double K_phi_a = 1.0; //KEEP AT 1.0 BECAUSE THIS IS JUST PASSTHROUGH
-const double K_theta_a = 0.0;
-const double K_psi_a = 0.0;
-const double K_phi_e = 0.0;
-const double K_theta_e = 1.0; //KEEP AT 1.0 BECAUSE THIS IS JUST PASSTHROUGH
-const double K_psi_e = 0.0;
-const double K_phi_r = 0.0;
-const double K_theta_r = 0.0;
-const double K_psi_r = 1.0; //KEEP AT 1.0 BECAUSE THIS IS JUST PASSTHROUGH
+// aerodynamic coupling gains
+const double K_theta_phi = 0.0;
+const double K_psi_phi = 0.0;
+const double K_phi_theta = 0.0;
+const double K_psi_theta = 0.0;
+const double K_phi_psi = 0.0;
+const double K_theta_psi = 0.0;
 
-//define varibles in P
-double P_phi = 0.0;
-double P_theta = 0.0;
-double P_psi = 0.0;
-
-
-// define 3x3 gain matrix for coupling
-const double K[3][3] = {
-    {K_phi_a, K_theta_a, K_psi_a},
-    {K_phi_e, K_theta_e, K_psi_e},
-    {K_phi_r, K_theta_r, K_psi_r}};
-
-double P[3] = {P_phi, P_theta, P_psi};
-
-// Resultant C vector (3x1)
-double C[3];
+// effectivness of control surfaces (ratio of control surface deflection to aircraft roll/pitch/yaw rate)
+double P_phi = 1.0;
+double P_theta = 1.0;
+double P_psi = 1.0;
 
 // Flight Controller Setup
 // This function is run once when the flight controller is turned on
@@ -148,6 +135,7 @@ void setup()
 }
 void loop()
 {
+    serialMonitor();
     prev_time = current_time;
     current_time = micros();
     dt = (current_time - prev_time) / 1000000.0;
@@ -197,10 +185,7 @@ void loop()
         antiCouplingMixing();
 
         desiredPivotServo_command_PWM = 140;
-
-
     }
-
 
     // Log data to RAM
     if (loopCounter > (2000 / datalogRate)) // 2000 is the loop rate in microseconds
@@ -245,10 +230,6 @@ void loop()
         dataLogged = false;
     }
 
-
-
-
-
     scaleCommands();
 
     aileronServo.write(aileron_command_PWM);
@@ -257,27 +238,6 @@ void loop()
     pivotServo.write(pivotServo_command_PWM);
     loopBlink();
     loopRate(2000);
-
-    // // print roll pitch yaw angles
-    // Serial.print(F("Roll: "));
-    // Serial.print(roll_IMU);
-    // Serial.print(F(" Pitch: "));
-    // Serial.print(pitch_IMU);
-    // Serial.print(F(" Yaw: "));
-    // Serial.println(yaw_IMU);
-
-    // Serial.print(F(" CH1: "));
-    // Serial.print(throttle_channel);
-    // Serial.print(F(" CH2: "));
-    // Serial.print(roll_channel);
-    // Serial.print(F(" CH3: "));
-    // Serial.print(pitch_channel);
-    // Serial.print(F(" CH4: "));
-    // Serial.print(yaw_channel);
-    // Serial.print(F(" CH5: "));
-    // Serial.print(pivot_channel);
-    // Serial.print(F(" CH6: "));
-    // Serial.println(mode2_channel);
 }
 
 void setupSD()
@@ -321,29 +281,36 @@ void setupSD()
         dataFile.close();
     }
 
-        // write a line of sample data to the SD card
-    dataFile = SD.open("K matrix.txt", FILE_WRITE);
-    //print the K matrix to the file, labeling each element
-    dataFile.print("K_phi_a: ");
-    dataFile.println(K_phi_a);
-    dataFile.print("K_theta_a: ");
-    dataFile.println(K_theta_a);
-    dataFile.print("K_psi_a: ");
-    dataFile.println(K_psi_a);
-    dataFile.print("K_phi_e: ");
-    dataFile.println(K_phi_e);
-    dataFile.print("K_theta_e: ");
-    dataFile.println(K_theta_e);
-    dataFile.print("K_psi_e: ");
-    dataFile.println(K_psi_e);
-    dataFile.print("K_phi_r: ");
-    dataFile.println(K_phi_r);
-    dataFile.print("K_theta_r: ");
-    dataFile.println(K_theta_r);
-    dataFile.print("K_psi_r: ");
-    dataFile.println(K_psi_r);
+    dataFile = SD.open("gains.txt", FILE_WRITE);
+    dataFile.print("K_theta_phi: ");
+    dataFile.print(K_theta_phi);
+    dataFile.println();
+    dataFile.print("K_psi_phi: ");
+    dataFile.print(K_psi_phi);
+    dataFile.println();
+    dataFile.print("K_phi_theta: ");
+    dataFile.print(K_phi_theta);
+    dataFile.println();
+    dataFile.print("K_psi_theta: ");
+    dataFile.print(K_psi_theta);
+    dataFile.println();
+    dataFile.print("K_phi_psi: ");
+    dataFile.print(K_phi_psi);
+    dataFile.println();
+    dataFile.print("K_theta_psi: ");
+    dataFile.print(K_theta_psi);
+    dataFile.println();
+    dataFile.print("P_phi: ");
+    dataFile.print(P_phi);
+    dataFile.println();
+    dataFile.print("P_theta: ");
+    dataFile.print(P_theta);
+    dataFile.println();
+    dataFile.print("P_psi: ");
+    dataFile.print(P_psi);
+    dataFile.println();
     dataFile.close();
-    
+
     // blink LED 10 times to indicate SD card is ready
     for (int i = 0; i < 10; i++)
     {
@@ -361,24 +328,27 @@ void logDataToRAM()
     if (currentRow < ROWS)
     {
 
+        //NOTE: everything except roll rate is somehow inverse but everything works, so I'll just invert it in the data printing here
+        //note this might make some of the gains backwards but ill just have to test it
+
         // time and fight phase
         dataLogArray[currentRow][0] = timeInMillis; // time in milliseconds
         dataLogArray[currentRow][1] = flight_phase; // if anticoupling mixing is active
 
         // roll variables
         dataLogArray[currentRow][2] = GyroX;                    // roll rate
-        dataLogArray[currentRow][3] = roll_des;                 // desired roll angle in degrees
-        dataLogArray[currentRow][4] = aileron_command_PWM - 90; // aileron command in degrees (90 is neutral)
+        dataLogArray[currentRow][3] = -roll_des;                 // desired roll angle in degrees
+        dataLogArray[currentRow][4] = -(aileron_command_PWM - 90); // aileron command in degrees (90 is neutral)
 
         // pitch variables
-        dataLogArray[currentRow][5] = GyroY;                     // pitch rate
-        dataLogArray[currentRow][6] = pitch_des;                 // pilot desired pitch angle in degrees
+        dataLogArray[currentRow][5] = -GyroY;                     // pitch rate
+        dataLogArray[currentRow][6] = -pitch_des;                 // pilot desired pitch angle in degrees
         dataLogArray[currentRow][7] = elevator_command_PWM - 90; // elevator command in degrees (90 is neutral)
 
         // yaw
-        dataLogArray[currentRow][8] = GyroZ; // yaw rate
-        dataLogArray[currentRow][9] = yaw_des;
-        dataLogArray[currentRow][10] = rudder_command_PWM - 90; // rudder command in degrees (90 is neutral)
+        dataLogArray[currentRow][8] = -GyroZ; // yaw rate
+        dataLogArray[currentRow][9] = -yaw_des;
+        dataLogArray[currentRow][10] = -(rudder_command_PWM - 90); // rudder command in degrees (90 is neutral)
 
         currentRow++;
     }
@@ -413,24 +383,36 @@ void clearDataInRAM()
 
 void antiCouplingMixing()
 {
-    // multipy gyroData matrix, a 1x3 matrix, by the coupling matrix, a 3x3 matrix
+    aileron_command_scaled = (aileron_command_scaled + K_theta_phi * GyroY + K_psi_phi * GyroZ) * P_phi;
+    elevator_command_scaled = (elevator_command_scaled + K_phi_theta * GyroX + K_psi_theta * GyroZ) * P_theta;
+    rudder_command_scaled = (rudder_command_scaled + K_phi_psi * GyroX + K_theta_psi * GyroY) * P_psi;
+}
 
-    P[0] = aileron_command_scaled; 
-    P[1] = elevator_command_scaled;
-    P[2] = rudder_command_scaled;
-
-    // Perform the matrix multiplication
-    for (int i = 0; i < 3; i++)
-    {
-        C[i] = 0; // Initialize the result array with zero
-        for (int j = 0; j < 3; j++)
-        {
-            C[i] += K[i][j] * P[j];
-        }
-    }
-
-    aileron_command_scaled = C[0];
-    elevator_command_scaled = C[1];
-    rudder_command_scaled  = C[2];
+void serialMonitor()
+{
+    //print out the data that would be logged to ram
+    Serial.print("Time: ");
+    Serial.print(timeInMillis);
+    Serial.print(" Flight Phase: ");    
+    Serial.print(flight_phase);
+    Serial.print(" Roll Rate: ");
+    Serial.print(GyroX);
+    Serial.print(" Desired Roll: ");
+    Serial.print(-roll_des);
+    Serial.print(" Aileron Command: ");
+    Serial.print(-(aileron_command_PWM - 90));
+    Serial.print(" Pitch Rate: ");
+    Serial.print(-GyroY);
+    Serial.print(" Desired Pitch: ");
+    Serial.print(-pitch_des);
+    Serial.print(" Elevator Command: ");
+    Serial.print(elevator_command_PWM - 90);
+    Serial.print(" Yaw Rate: ");
+    Serial.print(-GyroZ);
+    Serial.print(" Desired Yaw: ");
+    Serial.print(-yaw_des);
+    Serial.print(" Rudder Command: ");
+    Serial.print(-(rudder_command_PWM - 90));
+    Serial.println();
 
 }
