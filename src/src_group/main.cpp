@@ -9,7 +9,7 @@
 #include <Wire.h> // I2C library
 #include <SD.h>   // SD card library
 
-const int datalogRate = 50; // The rate at which data is logged to the SD card (in Hz)
+const int datalogRate = 10; // The rate at which data is logged to the SD card (in Hz)
 
 // Variables for Flight Control
 float timeInMillis;                             // The time in milliseconds since the flight controller has started
