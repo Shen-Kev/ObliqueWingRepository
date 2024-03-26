@@ -85,11 +85,11 @@ void setup()
     // NOTE: ROLL RATE IS THE ONLY ONE THAT ISNT INVERTED so when roll rate is with something else, change the sign of the gain
 
     // constants for aero coupling (each aero movement relative to another aero movement)
-    K_theta_phi = 0.303;
-    K_psi_phi = 0.454;
-    K_phi_theta = 0.222;
+    K_theta_phi = -0.303;
+    K_psi_phi = -0.454;
+    K_phi_theta = -0.222;
     K_psi_theta = 0.305;
-    K_phi_psi = 0.152;
+    K_phi_psi = -0.152;
     K_theta_psi = 0.140;
 
     //r2 values
@@ -108,6 +108,15 @@ void setup()
     K_psi_theta = K_psi_theta * K_psi_theta_r2;
     K_phi_psi = K_phi_psi * K_psi_phi_r2;
     K_theta_psi = K_theta_psi * K_psi_theta_r2;
+
+    //invert the ones that have phi bc roll is inverted, keep the rest the same
+    K_theta_phi = -K_theta_phi;
+    K_psi_phi = -K_psi_phi;
+    K_phi_theta = -K_phi_theta;
+    K_psi_theta = K_psi_theta;
+    K_phi_psi = -K_phi_psi;
+    K_theta_psi = K_theta_psi;
+
 
     // Constants for PID (no PID control for now...)
     // Kp_roll_angle = 1.0;
