@@ -345,6 +345,15 @@ void setupSD()
     dataFile.print("P_psi: ");
     dataFile.print(P_psi, 4);
     dataFile.println();
+    dataFile.print("K_phi_theta_r2: ");
+    dataFile.print(K_phi_theta_r2, 4);
+    dataFile.println();
+    dataFile.print("K_psi_phi_r2: ");
+    dataFile.print(K_psi_phi_r2, 4);
+    dataFile.println();
+    dataFile.print("K_psi_theta_r2: ");
+    dataFile.print(K_psi_theta_r2, 4);
+    dataFile.println();
     dataFile.close();
 
     // blink LED 10 times to indicate SD card is ready
