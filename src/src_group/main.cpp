@@ -177,9 +177,9 @@ void setup()
     K_theta_psi = K_theta_psi * K_psi_theta_r2;
 
     // multiply each P gain with its r^2 to get final gains
-    P_phi = P_phi * P_phi_r2;
-    P_theta = P_theta * P_theta_r2;
-    P_psi = P_psi * P_psi_r2;
+    // P_phi = P_phi * P_phi_r2;
+    // P_theta = P_theta * P_theta_r2;
+    // P_psi = P_psi * P_psi_r2;
 
     //invert the ones that have phi bc roll is inverted, keep the rest the same
     K_theta_phi = -K_theta_phi;
