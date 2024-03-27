@@ -72,6 +72,11 @@ double P_phi;
 double P_theta;
 double P_psi;
 
+// r2 values for P
+double P_phi_r2;
+double P_theta_r2;
+double P_psi_r2;
+
 // OOH MULTIPLY THEM BY THEIR VARIATIONS
 
 // Flight Controller Setup
@@ -83,29 +88,26 @@ void setup()
     // NOTE: ROLL RATE IS THE ONLY ONE THAT ISNT INVERTED so when roll rate is with something else, change the sign of the gain
 
     // constants for aero coupling (each aero movement relative to another aero movement)
-    K_theta_phi = -0.303;
-    K_psi_phi = -0.454;
-    K_phi_theta = -0.222;
-    K_psi_theta = 0.305;
-    K_phi_psi = -0.152;
-    K_theta_psi = 0.140;
+    K_theta_phi = -0.249;
+    K_psi_phi = 0; //keep yaw and roll correlations 0 becuase that should be natural...
+    K_phi_theta = -0.0828;
+    K_psi_theta = 0.054;
+    K_phi_psi = 0; //keep yaw and roll correlations 0 becuase that should be natural...
+    K_theta_psi = 0.0444;
 
     //r2 values
-    K_phi_theta_r2 = 0.067; //roll pitch r2 doesnt matte rorder
-    K_psi_phi_r2 = 0.069; // yaw roll r2 doesnt matter order
-    K_psi_theta_r2 = 0.043; // yaw pitch r2 doesnt matter order
+    K_phi_theta_r2 = 0.021; //roll pitch r2 doesnt matte rorder, so only 3 here instead of 6
+    K_psi_phi_r2 = 0.002; // yaw roll r2 doesnt matter order
+    K_psi_theta_r2 = 0.118; // yaw pitch r2 doesnt matter order
 
-    P_phi = 0.0765;
-    P_theta = 0.125;
-    P_psi = 0.051;
+    P_phi = 0.0922;
+    P_theta = 0.124;
+    P_psi = 0.0974;
 
-    // mulitply each aero coupling gain with its r^2 to get final gains
-    K_theta_phi = K_theta_phi * K_phi_theta_r2;
-    K_psi_phi = K_psi_phi * K_psi_phi_r2;
-    K_phi_theta = K_phi_theta * K_phi_theta_r2;
-    K_psi_theta = K_psi_theta * K_psi_theta_r2;
-    K_phi_psi = K_phi_psi * K_psi_phi_r2;
-    K_theta_psi = K_theta_psi * K_psi_theta_r2;
+    //r2 values for P
+    P_phi_r2 = 0.467;
+    P_theta_r2 = 0.427;
+    P_psi_r2 = 0.016;
 
 
     // Constants for PID (no PID control for now...)
@@ -166,6 +168,18 @@ void setup()
     delay(100);
     calibrateAttitude(); // runs IMU for a few seconds to allow it to stabilize
 
+    // mulitply each aero coupling gain with its r^2 to get final gains
+    K_theta_phi = K_theta_phi * K_phi_theta_r2;
+    K_psi_phi = K_psi_phi * K_psi_phi_r2;
+    K_phi_theta = K_phi_theta * K_phi_theta_r2;
+    K_psi_theta = K_psi_theta * K_psi_theta_r2;
+    K_phi_psi = K_phi_psi * K_psi_phi_r2;
+    K_theta_psi = K_theta_psi * K_psi_theta_r2;
+
+    // multiply each P gain with its r^2 to get final gains
+    P_phi = P_phi * P_phi_r2;
+    P_theta = P_theta * P_theta_r2;
+    P_psi = P_psi * P_psi_r2;
 
     //invert the ones that have phi bc roll is inverted, keep the rest the same
     K_theta_phi = -K_theta_phi;
