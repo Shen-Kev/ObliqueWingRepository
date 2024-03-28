@@ -68,14 +68,14 @@ double K_psi_theta_r2; // psi and theta have an r2 value
 
 // effectivness of control surfaces (ratio of control surface deflection to aircraft roll/pitch/yaw rate)
 // or maybe this is just manualy tuned idk
-double P_phi;
-double P_theta;
-double P_psi;
+double E_phi;
+double E_theta;
+double E_psi;
 
-// r2 values for P
-double P_phi_r2;
-double P_theta_r2;
-double P_psi_r2;
+// r2 values for E
+double E_phi_r2;
+double E_theta_r2;
+double E_psi_r2;
 
 // OOH MULTIPLY THEM BY THEIR VARIATIONS
 
@@ -100,14 +100,14 @@ void setup()
     K_psi_phi_r2 = 0.002; // yaw roll r2 doesnt matter order
     K_psi_theta_r2 = 0.118; // yaw pitch r2 doesnt matter order
 
-    P_phi = 0.0922;
-    P_theta = 0.124;
-    P_psi = 0.0974;
+    E_phi = 0.0922;
+    E_theta = 0.124;
+    E_psi = 0.0974;
 
-    //r2 values for P
-    P_phi_r2 = 0.467;
-    P_theta_r2 = 0.427;
-    P_psi_r2 = 0.016;
+    //r2 values for E
+    E_phi_r2 = 0.467;
+    E_theta_r2 = 0.427;
+    E_psi_r2 = 0.016;
 
 
     // Constants for PID (no PID control for now...)
@@ -175,11 +175,6 @@ void setup()
     K_psi_theta = K_psi_theta * K_psi_theta_r2;
     K_phi_psi = K_phi_psi * K_psi_phi_r2;
     K_theta_psi = K_theta_psi * K_psi_theta_r2;
-
-    // multiply each P gain with its r^2 to get final gains
-    // P_phi = P_phi * P_phi_r2;
-    // P_theta = P_theta * P_theta_r2;
-    // P_psi = P_psi * P_psi_r2;
 
     //invert the ones that have phi bc roll is inverted, keep the rest the same
     K_theta_phi = -K_theta_phi;
@@ -369,13 +364,13 @@ void setupSD()
     dataFile.print(K_theta_psi, 4);
     dataFile.println();
     dataFile.print("P_phi: ");
-    dataFile.print(P_phi, 4);
+    dataFile.print(E_phi, 4);
     dataFile.println();
     dataFile.print("P_theta: ");
-    dataFile.print(P_theta, 4);
+    dataFile.print(E_theta, 4);
     dataFile.println();
     dataFile.print("P_psi: ");
-    dataFile.print(P_psi, 4);
+    dataFile.print(E_psi, 4);
     dataFile.println();
     dataFile.print("K_phi_theta_r2: ");
     dataFile.print(K_phi_theta_r2, 4);
@@ -460,9 +455,9 @@ void clearDataInRAM()
 
 void antiCouplingMixing()
 {
-    aileron_command_scaled = aileron_command_scaled + (K_theta_phi * GyroY + K_psi_phi * GyroZ) * P_phi;
-    elevator_command_scaled = elevator_command_scaled + (K_phi_theta * GyroX + K_psi_theta * GyroZ) * P_theta;
-    rudder_command_scaled = rudder_command_scaled + (K_phi_psi * GyroX + K_theta_psi * GyroY) * P_psi;
+    aileron_command_scaled = aileron_command_scaled + (K_theta_phi * GyroY + K_psi_phi * GyroZ) * E_phi;
+    elevator_command_scaled = elevator_command_scaled + (K_phi_theta * GyroX + K_psi_theta * GyroZ) * E_theta;
+    rudder_command_scaled = rudder_command_scaled + (K_phi_psi * GyroX + K_theta_psi * GyroY) * E_psi;
 }
 
 void serialMonitor()
