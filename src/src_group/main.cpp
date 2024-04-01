@@ -77,7 +77,6 @@ double E_phi_r2;
 double E_theta_r2;
 double E_psi_r2;
 
-// OOH MULTIPLY THEM BY THEIR VARIATIONS
 
 // Flight Controller Setup
 // This function is run once when the flight controller is turned on
@@ -108,15 +107,6 @@ void setup()
     E_phi_r2 = 0.467;
     E_theta_r2 = 0.427;
     E_psi_r2 = 0.016;
-
-
-    // Constants for PID (no PID control for now...)
-    // Kp_roll_angle = 1.0;
-    // Ki_roll_angle = 0.3;
-    // Kd_roll_angle = 0.2;
-    // Kp_pitch_angle = 2.0;
-    // Ki_pitch_angle = 0.5;
-    // Kd_pitch_angle = 0.4;
 
     Serial.begin(500000);
     Serial.println("serial works");
