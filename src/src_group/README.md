@@ -1,0 +1,1 @@
+This folder contains all the software uploaded to the flight computer on board the oblique wing experimental model airplane in the project, "Taming the Oblique Wing: Improving Fuel Efficiency by Developing and Flight Testing an Oblique Wing Aircraft Utilizing a Novel Control Method."
