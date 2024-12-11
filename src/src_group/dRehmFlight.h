@@ -1,4 +1,4 @@
-// dRhemFlight Code- edited down to basics needed for the Albatross Project. All credit for this code goes to Nichlosas Rhem, and this code will be kept separate from other code in this project.
+// Credit for the original code goes to Nicholas Rehm. The software has been edited by Kevin Shen for the oblique wing project. 
 
 // Uncomment only one receiver type
 #define USE_PWM_RX
