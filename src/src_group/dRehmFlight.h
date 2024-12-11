@@ -1,4 +1,4 @@
-// Credit for the original code goes to Nicholas Rehm. The software has been edited by Kevin Shen for the oblique wing project. 
+// The software in this folder was originally the dRehmFlight library by Nicholas Rehm, which has been imported and modified by Kevin Shen.
 
 // Uncomment only one receiver type
 #define USE_PWM_RX
